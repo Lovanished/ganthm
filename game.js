@@ -2,8 +2,25 @@ const $=s=>document.querySelector(s);const listEl=$('#songList'),playBtn=$('#pla
 async function init(){try{const r=await fetch('./charts/index.json',{cache:'no-store'});if(!r.ok)throw Error('charts/index.json '+r.status);songs=await r.json();renderSongs();}catch(e){statusEl.textContent='곡 목록을 불러오지 못했습니다: '+e.message;}}
 function renderSongs(){listEl.innerHTML='';songs.forEach((s,i)=>{const d=document.createElement('div');d.className='song';d.innerHTML=`<div><h2>${esc(s.title||'Untitled')}</h2><p>${esc(s.artist||'')}</p></div><div class="meta">${esc(s.difficulty||'NORMAL')}</div>`;d.onclick=()=>selectSong(i,d);listEl.appendChild(d)});if(songs.length)selectSong(0,listEl.firstChild)}
 function selectSong(i,el){document.querySelectorAll('.song').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selected=i;playBtn.disabled=false;statusEl.textContent='선택됨: '+(songs[i].title||'Untitled')}
-async function loadChart(){const s=songs[selected];const r=await fetch(s.chart,{cache:'no-store'});if(!r.ok)throw Error('채보 파일 '+r.status);chart=await r.json();audio.src=chart.audio;audio.load();$('#songTitle').textContent=chart.title||s.title||''}
-playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').classList.add('hidden');$('#gameScreen').classList.remove('hidden');await audio.play();startPerf=performance.now();running=true;requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 실패: '+e.message;}};
+async function loadChart(){const s=songs[selected];const r=await fetch(s.chart,{cache:'no-store'});if(!r.ok)throw Error('채보 파일 '+r.status);chart=await r.json();const base = new URL(".", window.location.href);
+audio.src = new URL(chart.audio, base).href;
+audio.preload = "auto";
+audio.load();
+audio.onerror = () => {
+  running = false;
+  const code = audio.error?.code ?? "unknown";
+  resultEl.innerHTML = `<div><b>음원 로딩 실패</b><br><br>파일 경로 또는 음원 형식을 확인하세요.<br>경로: ${audio.src}<br>MediaError: ${code}<br><br><button onclick="resultEl.classList.add('hidden')">CLOSE</button></div>`;
+  resultEl.classList.remove("hidden");
+};$('#songTitle').textContent=chart.title||s.title||''}
+playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').classList.add('hidden');$('#gameScreen').classList.remove('hidden');try {
+  await audio.play();
+} catch (err) {
+  running = false;
+  resultEl.innerHTML = `<div><b>재생 실패</b><br><br>${err.message}<br><br>음원이 브라우저에서 지원되는 형식인지 확인하세요.<br><button onclick="resultEl.classList.add('hidden')">CLOSE</button></div>`;
+  resultEl.classList.remove("hidden");
+  return;
+}
+startPerf=performance.now();running=true;requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 실패: '+e.message;}};
 $('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')};
 function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0};$('#result').classList.add('hidden');$('#notes').innerHTML='';active=(chart.notes||[]).map((n,i)=>({...n,i,done:false,el:null}));updateHud();$('#judge').textContent=''}function updateHud(){$('#score').textContent='SCORE '+score;$('#combo').textContent='COMBO '+combo}
 function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note';e.style.left=(n.lane*25)+'%';$('#notes').appendChild(e);n.el=e}}}
