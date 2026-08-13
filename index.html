@@ -1,6 +1,35 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rhythm Web</title><link rel="stylesheet" href="style.css"></head>
 <body>
-<div id="selectScreen" class="screen"><div class="panel"><h1>RHYTHM WEB</h1><p class="sub">SELECT SONG</p><div id="songList"></div><button id="playSelected" disabled>PLAY</button><p id="loadStatus"></p></div></div>
-<div id="gameScreen" class="screen hidden"><header><button id="backBtn">SONG SELECT</button><strong id="songTitle"></strong><span id="score">SCORE 0</span><span id="combo">COMBO 0</span><span id="judge"></span></header><main><div id="game"><div id="lanes"></div><div id="hitLine"></div><div id="notes"></div></div><div id="keys"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd></div></main><div id="result" class="hidden"></div></div>
+<div id="selectScreen" class="screen">
+  <div class="panel">
+    <h1>RHYTHM WEB</h1>
+    <p class="sub">SELECT SONG</p>
+    <div id="songList"></div>
+    <div class="speedControl">
+      <label for="speedRange">노트 속도 <span id="speedValue">430</span></label>
+      <input type="range" id="speedRange" min="200" max="900" step="10" value="430">
+    </div>
+    <button id="playSelected" disabled>PLAY</button>
+    <p id="loadStatus"></p>
+  </div>
+</div>
+<div id="gameScreen" class="screen hidden">
+  <header><button id="backBtn">SONG SELECT</button><strong id="songTitle"></strong><span id="score">SCORE 0</span><span id="combo">COMBO 0</span><span id="judge"></span></header>
+  <main>
+    <div id="gameWrap">
+      <div class="sideDeco" id="decoLeft"><img id="decoLeftImg" alt=""></div>
+      <div id="game">
+        <div class="laneArea">
+          <div id="lanes"></div>
+          <div id="hitLine"></div>
+          <div id="notes"></div>
+        </div>
+      </div>
+      <div class="sideDeco" id="decoRight"><img id="decoRightImg" alt=""></div>
+    </div>
+    <div id="keys"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd></div>
+  </main>
+  <div id="result" class="hidden"></div>
+</div>
 <script src="game.js"></script></body></html>
