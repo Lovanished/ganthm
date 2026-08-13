@@ -1,0 +1,11 @@
+*{box-sizing:border-box}body{margin:0;background:#0d0f16;color:#eee;font-family:system-ui,sans-serif;overflow:hidden}
+#app{width:min(900px,100vw);margin:auto;padding:18px}header{display:flex;gap:10px;align-items:center}h1{font-size:20px;margin-right:auto}
+button,select{background:#191d29;color:#fff;border:1px solid #394052;padding:9px 13px;border-radius:7px}button{cursor:pointer}
+#hud{height:42px;display:flex;align-items:center;justify-content:space-between}.game{position:relative}
+#game{height:min(78vh,720px);position:relative;border:1px solid #303646;background:#111520;overflow:hidden}
+#lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(4,1fr)}
+.lane{border-right:1px solid #252a38}.lane:last-child{border:0}
+#hitLine{position:absolute;left:0;right:0;bottom:90px;height:3px;background:#fff;box-shadow:0 0 10px #fff}
+.note{position:absolute;width:calc(25% - 8px);height:22px;border-radius:7px;background:#6ee7ff;box-shadow:0 0 12px #6ee7ff;transform:translateX(4px)}
+#keys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}kbd{text-align:center;padding:10px;background:#191d29;border:1px solid #343b4d;border-radius:6px}
+#judge{text-align:center;font-weight:800;min-width:120px}.hidden{display:none}#result{position:fixed;inset:0;background:#000b;display:grid;place-items:center;font-size:26px;text-align:center}

@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rhythm Web</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header><h1>RHYTHM WEB</h1><select id="songSelect"></select><button id="startBtn">START</button></header>
+  <main>
+    <div id="hud"><span id="score">SCORE 0</span><span id="combo">COMBO 0</span><span id="judge"></span></div>
+    <div id="game">
+      <div id="lanes"></div><div id="hitLine"></div><div id="notes"></div>
+    </div>
+    <div id="keys"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd></div>
+    <div id="result" class="hidden"></div>
+  </main>
+</div>
+<script src="game.js"></script>
+</body></html>
