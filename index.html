@@ -15,7 +15,20 @@
   </div>
 </div>
 <div id="gameScreen" class="screen hidden">
-  <header><button id="backBtn">SONG SELECT</button><strong id="songTitle"></strong><span id="score">SCORE 0</span><span id="combo">COMBO 0</span><span id="judge"></span></header>
+  <header><button id="backBtn">SONG SELECT</button><strong id="songTitle"></strong><span id="score">SCORE 0</span><span id="combo">COMBO 0</span><span id="judge"></span><span class="editHint">SPACE: 채보 작성 모드</span></header>
+  <div id="editHud" class="hidden">
+    <div class="editRow"><b>채보 작성 모드</b><span id="editStatus">PAUSED</span></div>
+    <div class="editRow"><span>TIME</span><span id="editTime">0:00 / 0:00</span></div>
+    <div class="editRow"><span>NOTES</span><span id="editCount">0</span></div>
+    <div class="editRow"><label for="snapDivision">스냅</label>
+      <select id="snapDivision">
+        <option value="1">1/1</option><option value="2">1/2</option><option value="3">1/3</option>
+        <option value="4" selected>1/4</option><option value="6">1/6</option><option value="8">1/8</option>
+      </select>
+    </div>
+    <div class="editRow"><button id="editUndoBtn">실행취소 (Z)</button><button id="editSaveBtn">저장 (S)</button></div>
+    <div class="editKeys">SPACE 모드전환 · ENTER 재생/일시정지 · ←/→ 1비트 이동 · SHIFT+←/→ 1초 이동 · D F J K 노트 입력 · Z 실행취소 · S 저장</div>
+  </div>
   <main>
     <div id="gameWrap">
       <div class="sideDeco" id="decoLeft"><img id="decoLeftImg" alt=""></div>
