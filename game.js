@@ -1,5 +1,19 @@
 const $=s=>document.querySelector(s);const listEl=$('#songList'),playBtn=$('#playSelected'),statusEl=$('#loadStatus'),resultEl=$('#result');let songs=[],selected=null,chart=null,audio=new Audio();let running=false,active=[],score=0,combo=0,maxCombo=0,counts={Perfect:0,Great:0,Good:0,Miss:0};
 
+// 레인 수별 키 배치. 채보 json에 "lanes":6 또는 8을 지정하면 해당 배치가 적용됨 (기본 4).
+const KEY_SETS={4:['d','f','j','k'],6:['d','f','g','j','k','l'],8:['z','d','f','g','j','k','l','/']};
+let laneCount=4,LANES=KEY_SETS[4],LANE_KEYS={d:0,f:1,j:2,k:3};
+function setupLanes(n){
+  laneCount=KEY_SETS[n]?n:4;
+  LANES=KEY_SETS[laneCount];
+  LANE_KEYS={};LANES.forEach((k,i)=>LANE_KEYS[k]=i);
+  document.documentElement.style.setProperty('--laneCount',laneCount);
+  document.documentElement.style.setProperty('--laneAreaWidth',(laneCount<=4?64:laneCount<=6?80:94)+'%');
+  const lanesEl=$('#lanes');lanesEl.innerHTML='';for(let i=0;i<laneCount;i++)lanesEl.appendChild(Object.assign(document.createElement('div'),{className:'lane'}));
+  const keysEl=$('#keys');keysEl.innerHTML='';LANES.forEach(k=>keysEl.appendChild(Object.assign(document.createElement('kbd'),{textContent:k.toUpperCase()})));
+}
+setupLanes(4);
+
 // 트랙 양옆 장식: 평소엔 idle 이미지, D/F/J/K 입력에 맞춰 방향 이미지로 반응. 실제 파일명/경로에 맞게 수정하세요.
 const LANE_IMG={d:'assets/left.png',f:'assets/down.png',j:'assets/up.png',k:'assets/right.png'};
 const LANE_DIR={d:'left',f:'down',j:'up',k:'right'};
@@ -32,6 +46,7 @@ audio.onerror = () => {
   resultEl.classList.remove("hidden");
 };
 if(chart.speed&&speedRange){speed=chart.speed;speedRange.value=chart.speed;speedValueEl.textContent=chart.speed}
+setupLanes(chart.lanes||4);
 $('#songTitle').textContent=chart.title||s.title||''}
 playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').classList.add('hidden');$('#gameScreen').classList.remove('hidden');try {
   await audio.play();
@@ -45,7 +60,7 @@ running=true;requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 
 $('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;resetDecoIdle(chart&&chart.bpm);exitEditModeSilently();$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')};
 function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0};$('#result').classList.add('hidden');$('#notes').innerHTML='';active=(chart.notes||[]).map((n,i)=>({...n,i,done:false,el:null}));editMode=false;editInitialized=false;editHistory=[];editHud.classList.add('hidden');document.body.classList.remove('editing');resetDecoIdle(chart.bpm);updateHud();$('#judge').textContent=''}
 function updateHud(){$('#score').textContent='SCORE '+score;$('#combo').textContent='COMBO '+combo}
-function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note'+(n.fromEdit?' editNote':'');e.style.left=(n.lane*25)+'%';$('#notes').appendChild(e);n.el=e}}}
+function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note'+(n.fromEdit?' editNote':'');e.style.left=(n.lane*100/laneCount)+'%';$('#notes').appendChild(e);n.el=e}}}
 function frame(){if(!running)return;const now=audio.currentTime;spawn(now);const h=$('#game').clientHeight,hit=h-88;for(const n of active){if(!n.el||n.done)continue;const d=n.time-now;n.el.style.top=(hit-d*speed-11)+'px';if(!editMode&&d<-.23)judge(n,'Miss')}if(editMode)updateEditHud();requestAnimationFrame(frame);}
 function judge(n,type){if(n.done)return;n.done=true;if(n.el)n.el.remove();counts[type]++;if(type==='Miss')combo=0;else{combo++;maxCombo=Math.max(maxCombo,combo);score+=type==='Perfect'?1000:type==='Great'?700:400}$('#judge').textContent=type;updateHud();if(active.every(x=>x.done))finish()}
 function finish(){running=false;resetDecoIdle(chart&&chart.bpm);$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')}}
@@ -128,7 +143,7 @@ function seek(delta){audio.currentTime=Math.min(Math.max(0,audio.currentTime+del
 function exportChart(){
   const notesOut=active.map(({time,lane})=>({time:Math.round(time*1000)/1000,lane})).sort((a,b)=>a.time-b.time);
   const s=songs[selected]||{};
-  const out={title:chart.title||s.title||'Untitled',artist:chart.artist||s.artist||'',bpm:chart.bpm||120,offset:chart.offset||0,audio:chart.audio,difficulty:chart.difficulty||s.difficulty||'NORMAL',notes:notesOut};
+  const out={title:chart.title||s.title||'Untitled',artist:chart.artist||s.artist||'',bpm:chart.bpm||120,offset:chart.offset||0,audio:chart.audio,difficulty:chart.difficulty||s.difficulty||'NORMAL',lanes:laneCount,notes:notesOut};
   const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=(out.title||'chart').replace(/[^\w\-]+/g,'_')+'.json';
@@ -140,12 +155,12 @@ $('#editSaveBtn')&&($('#editSaveBtn').onclick=exportChart);
 
 function handleEditKey(e){
   const k=e.key.toLowerCase();
-  if(k==='z'){e.preventDefault();undoLastNote();return}
+  if(e.code==='Backspace'){e.preventDefault();undoLastNote();return}
   if(k==='s'){e.preventDefault();exportChart();return}
   if(e.code==='Enter'){e.preventDefault();togglePlayPause();return}
   if(e.code==='ArrowLeft'){e.preventDefault();seek(e.shiftKey?-1:-beatStep());return}
   if(e.code==='ArrowRight'){e.preventDefault();seek(e.shiftKey?1:beatStep());return}
-  const lane={d:0,f:1,j:2,k:3}[k];
+  const lane=LANE_KEYS[k];
   if(lane===undefined)return;
   placeNote(lane);
 }
@@ -157,7 +172,7 @@ function keydown(e){
   if(LANE_IMG[key]&&chart&&!$('#gameScreen').classList.contains('hidden'))registerDecoInput(key);
   if(editMode){handleEditKey(e);return}
   if(!running)return;
-  const lane={d:0,f:1,j:2,k:3}[key];if(lane===undefined)return;
+  const lane=LANE_KEYS[key];if(lane===undefined)return;
   const now=audio.currentTime;
   const c=active.filter(n=>!n.done&&n.lane===lane).map(n=>({n,err:Math.abs(n.time-now)})).sort((a,b)=>a.err-b.err)[0];
   if(!c)return;
