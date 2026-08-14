@@ -9,8 +9,8 @@ function setupLanes(n){
   LANE_KEYS={};LANES.forEach((k,i)=>LANE_KEYS[k]=i);
   document.documentElement.style.setProperty('--laneCount',laneCount);
   document.documentElement.style.setProperty('--laneAreaWidth',(laneCount<=4?64:laneCount<=6?80:94)+'%');
-  const lanesEl=$('#lanes');lanesEl.innerHTML='';for(let i=0;i<laneCount;i++)lanesEl.appendChild(Object.assign(document.createElement('div'),{className:'lane'}));
-  const keysEl=$('#keys');keysEl.innerHTML='';LANES.forEach(k=>keysEl.appendChild(Object.assign(document.createElement('kbd'),{textContent:k.toUpperCase()})));
+  const lanesEl=$('#lanes');lanesEl.innerHTML='';for(let i=0;i<laneCount;i++){const d=document.createElement('div');d.className='lane';d.dataset.lane=i;d.addEventListener('pointerdown',onLanePointerDown);lanesEl.appendChild(d)}
+  const keysEl=$('#keys');keysEl.innerHTML='';LANES.forEach((k,i)=>{const kb=document.createElement('kbd');kb.textContent=k.toUpperCase();kb.dataset.lane=i;kb.addEventListener('pointerdown',onLanePointerDown);keysEl.appendChild(kb)});
 }
 setupLanes(4);
 
@@ -153,6 +153,19 @@ function exportChart(){
 $('#editUndoBtn')&&($('#editUndoBtn').onclick=undoLastNote);
 $('#editSaveBtn')&&($('#editSaveBtn').onclick=exportChart);
 
+// 레인 입력 처리 (키보드 입력과 터치/클릭 입력이 공유). lane은 0부터 시작하는 레인 인덱스.
+function handleLaneInput(lane){
+  if(lane===undefined||lane===null||!chart||$('#gameScreen').classList.contains('hidden'))return;
+  const keyLetter=LANES[lane];
+  if(keyLetter&&LANE_IMG[keyLetter])registerDecoInput(keyLetter);
+  if(editMode){placeNote(lane);return}
+  if(!running)return;
+  const now=audio.currentTime;
+  const c=active.filter(n=>!n.done&&n.lane===lane).map(n=>({n,err:Math.abs(n.time-now)})).sort((a,b)=>a.err-b.err)[0];
+  if(!c)return;
+  if(c.err<=.05)judge(c.n,'Perfect');else if(c.err<=.10)judge(c.n,'Great');else if(c.err<=.18)judge(c.n,'Good')
+}
+
 function handleEditKey(e){
   const k=e.key.toLowerCase();
   if(e.code==='Backspace'){e.preventDefault();undoLastNote();return}
@@ -162,20 +175,25 @@ function handleEditKey(e){
   if(e.code==='ArrowRight'){e.preventDefault();seek(e.shiftKey?1:beatStep());return}
   const lane=LANE_KEYS[k];
   if(lane===undefined)return;
-  placeNote(lane);
+  handleLaneInput(lane);
 }
 
 function keydown(e){
   if(document.activeElement&&['SELECT','INPUT'].includes(document.activeElement.tagName))return;
   if(e.code==='Space'&&chart&&!$('#gameScreen').classList.contains('hidden')){e.preventDefault();toggleEditMode();return}
   const key=e.key.toLowerCase();
-  if(LANE_IMG[key]&&chart&&!$('#gameScreen').classList.contains('hidden'))registerDecoInput(key);
   if(editMode){handleEditKey(e);return}
   if(!running)return;
   const lane=LANE_KEYS[key];if(lane===undefined)return;
-  const now=audio.currentTime;
-  const c=active.filter(n=>!n.done&&n.lane===lane).map(n=>({n,err:Math.abs(n.time-now)})).sort((a,b)=>a.err-b.err)[0];
-  if(!c)return;
-  if(c.err<=.05)judge(c.n,'Perfect');else if(c.err<=.10)judge(c.n,'Great');else if(c.err<=.18)judge(c.n,'Good')
+  handleLaneInput(lane);
+}
+// 레인 터치/클릭 입력: 손가락이나 마우스로 직접 레인을 눌러도 키보드와 동일하게 동작 (멀티터치 지원)
+function onLanePointerDown(e){
+  e.preventDefault();
+  const lane=parseInt(e.currentTarget.dataset.lane,10);
+  e.currentTarget.classList.add('pressed');
+  clearTimeout(e.currentTarget._pressTimer);
+  e.currentTarget._pressTimer=setTimeout(()=>e.currentTarget.classList.remove('pressed'),120);
+  handleLaneInput(lane);
 }
 document.addEventListener('keydown',keydown);function esc(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}init();
