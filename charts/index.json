@@ -6,5 +6,9 @@
   {
     "title": "Ghondhy 4 real",
     "chart": "charts/Ghondhy/real4.json"
+  },
+  {
+    "title": "Gondy 4 real",
+    "chart": "charts/Ghondhy/normal4.json"
   }
 ]
