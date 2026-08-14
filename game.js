@@ -1,9 +1,13 @@
 const $=s=>document.querySelector(s);const listEl=$('#songList'),playBtn=$('#playSelected'),statusEl=$('#loadStatus'),resultEl=$('#result');let songs=[],selected=null,chart=null,audio=new Audio();let running=false,active=[],score=0,combo=0,maxCombo=0,counts={Perfect:0,Great:0,Good:0,Miss:0};
 
-// 트랙 양옆에 표시할 이미지 4장 (BPM마다 순서대로 순환). 실제 파일명/경로에 맞게 수정하세요.
-const DECO_IMAGES=['assets/deco1.png','assets/deco2.png','assets/deco3.png','assets/deco4.png'];
+// 트랙 양옆 장식: 평소엔 idle 이미지, D/F/J/K 입력에 맞춰 방향 이미지로 반응. 실제 파일명/경로에 맞게 수정하세요.
+const LANE_IMG={d:'assets/left.png',f:'assets/down.png',j:'assets/up.png',k:'assets/right.png'};
+const LANE_DIR={d:'left',f:'down',j:'up',k:'right'};
+const IDLE_IMG='assets/idle.png';
 const decoLeftImg=$('#decoLeftImg'),decoRightImg=$('#decoRightImg');
-let decoTimer=null,decoIndex=0;
+const FRAME_MS=90; // 입력 반응 애니메이션의 기준 "프레임" 길이
+document.documentElement.style.setProperty('--inputFrame',(FRAME_MS*2)+'ms');
+let recentPresses=[],decoCycleTimer=null,decoIdleTimer=null,decoCycleIdx=0;
 
 // 노트 낙하 속도 (px/sec). 슬라이더로 조절하거나 채보 json의 "speed" 필드로 곡별 기본값을 줄 수 있음.
 const speedRange=$('#speedRange'),speedValueEl=$('#speedValue');
@@ -37,26 +41,47 @@ playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').class
   resultEl.classList.remove("hidden");
   return;
 }
-running=true;startDeco(chart.bpm);requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 실패: '+e.message;}};
-$('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;stopDeco();exitEditModeSilently();$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')};
-function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0};$('#result').classList.add('hidden');$('#notes').innerHTML='';active=(chart.notes||[]).map((n,i)=>({...n,i,done:false,el:null}));editMode=false;editInitialized=false;editHistory=[];editHud.classList.add('hidden');document.body.classList.remove('editing');updateHud();$('#judge').textContent=''}
+running=true;requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 실패: '+e.message;}};
+$('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;resetDecoIdle(chart&&chart.bpm);exitEditModeSilently();$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')};
+function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0};$('#result').classList.add('hidden');$('#notes').innerHTML='';active=(chart.notes||[]).map((n,i)=>({...n,i,done:false,el:null}));editMode=false;editInitialized=false;editHistory=[];editHud.classList.add('hidden');document.body.classList.remove('editing');resetDecoIdle(chart.bpm);updateHud();$('#judge').textContent=''}
 function updateHud(){$('#score').textContent='SCORE '+score;$('#combo').textContent='COMBO '+combo}
 function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note'+(n.fromEdit?' editNote':'');e.style.left=(n.lane*25)+'%';$('#notes').appendChild(e);n.el=e}}}
 function frame(){if(!running)return;const now=audio.currentTime;spawn(now);const h=$('#game').clientHeight,hit=h-88;for(const n of active){if(!n.el||n.done)continue;const d=n.time-now;n.el.style.top=(hit-d*speed-11)+'px';if(!editMode&&d<-.23)judge(n,'Miss')}if(editMode)updateEditHud();requestAnimationFrame(frame);}
 function judge(n,type){if(n.done)return;n.done=true;if(n.el)n.el.remove();counts[type]++;if(type==='Miss')combo=0;else{combo++;maxCombo=Math.max(maxCombo,combo);score+=type==='Perfect'?1000:type==='Great'?700:400}$('#judge').textContent=type;updateHud();if(active.every(x=>x.done))finish()}
-function finish(){running=false;stopDeco();$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')}}
+function finish(){running=false;resetDecoIdle(chart&&chart.bpm);$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')}}
 
-// BPM에 맞춰 사이드 장식 이미지를 순환시키고, CSS의 headbang 애니메이션 주기(--beat)를 같은 박자로 맞춤
-function startDeco(bpm){
-  stopDeco();
+// ===== 트랙 양옆 입력 반응형 장식 =====
+// - 평소(idle): idle.png가 bpm 한 박자 동안 4프레임으로 끊어서 위아래 스쿼시-스트레치
+// - D/F/J/K 입력: 해당 방향 이미지로 바뀌며 2프레임 주기로 그 방향으로 늘었다 줄었다 반복
+// - 동시에 여러 입력: 해당 이미지들을 2프레임 간격으로 순서대로 빠르게 순환
+// - 3프레임(약 270ms) 이상 입력이 없으면 idle로 복귀
+function registerDecoInput(lane){
   if(!decoLeftImg||!decoRightImg)return;
-  const beatSec=60/(bpm||120);
-  document.documentElement.style.setProperty('--beat',beatSec+'s');
-  decoIndex=0;setDecoImages();
-  decoTimer=setInterval(()=>{decoIndex=(decoIndex+1)%DECO_IMAGES.length;setDecoImages()},beatSec*1000);
+  const now=performance.now();
+  recentPresses=recentPresses.filter(p=>now-p.t<FRAME_MS*3).concat({lane,t:now});
+  const distinct=[...new Set(recentPresses.map(p=>p.lane))];
+  applyDecoActive(distinct);
+  clearTimeout(decoIdleTimer);
+  decoIdleTimer=setTimeout(goDecoIdle,FRAME_MS*3);
 }
-function setDecoImages(){decoLeftImg.src=DECO_IMAGES[decoIndex];decoRightImg.src=DECO_IMAGES[(decoIndex+2)%DECO_IMAGES.length];}
-function stopDeco(){if(decoTimer){clearInterval(decoTimer);decoTimer=null}}
+function applyDecoActive(lanes){
+  clearInterval(decoCycleTimer);decoCycleTimer=null;
+  setDecoIdleClass(false);
+  if(lanes.length<=1){
+    setDecoImg(LANE_IMG[lanes[0]]);
+    setDecoPulse(LANE_DIR[lanes[0]]);
+  }else{
+    decoCycleIdx=0;
+    const step=()=>{const lane=lanes[decoCycleIdx%lanes.length];setDecoImg(LANE_IMG[lane]);setDecoPulse(LANE_DIR[lane]);decoCycleIdx++};
+    step();
+    decoCycleTimer=setInterval(step,FRAME_MS*2);
+  }
+}
+function setDecoImg(src){decoLeftImg.src=src;decoRightImg.src=src}
+function setDecoPulse(dir){[decoLeftImg,decoRightImg].forEach(img=>{img.classList.remove('pulse-left','pulse-right','pulse-up','pulse-down');void img.offsetWidth;img.classList.add('pulse-'+dir)})}
+function setDecoIdleClass(idle){[decoLeftImg,decoRightImg].forEach(img=>{img.classList.toggle('idleWiggle',idle);if(idle)img.classList.remove('pulse-left','pulse-right','pulse-up','pulse-down')})}
+function goDecoIdle(){clearInterval(decoCycleTimer);decoCycleTimer=null;recentPresses=[];if(!decoLeftImg||!decoRightImg)return;setDecoImg(IDLE_IMG);setDecoIdleClass(true)}
+function resetDecoIdle(bpm){clearInterval(decoCycleTimer);decoCycleTimer=null;clearTimeout(decoIdleTimer);decoIdleTimer=null;recentPresses=[];document.documentElement.style.setProperty('--beat',(60/(bpm||120))+'s');if(!decoLeftImg||!decoRightImg)return;setDecoImg(IDLE_IMG);setDecoIdleClass(true)}
 
 // ===== 채보 작성 모드 =====
 function beatStep(){const bpm=(chart&&chart.bpm)||120;const div=parseInt(snapSelect?.value||4,10);return (60/bpm)/div}
@@ -128,9 +153,11 @@ function handleEditKey(e){
 function keydown(e){
   if(document.activeElement&&['SELECT','INPUT'].includes(document.activeElement.tagName))return;
   if(e.code==='Space'&&chart&&!$('#gameScreen').classList.contains('hidden')){e.preventDefault();toggleEditMode();return}
+  const key=e.key.toLowerCase();
+  if(LANE_IMG[key]&&chart&&!$('#gameScreen').classList.contains('hidden'))registerDecoInput(key);
   if(editMode){handleEditKey(e);return}
   if(!running)return;
-  const lane={d:0,f:1,j:2,k:3}[e.key.toLowerCase()];if(lane===undefined)return;
+  const lane={d:0,f:1,j:2,k:3}[key];if(lane===undefined)return;
   const now=audio.currentTime;
   const c=active.filter(n=>!n.done&&n.lane===lane).map(n=>({n,err:Math.abs(n.time-now)})).sort((a,b)=>a.err-b.err)[0];
   if(!c)return;
