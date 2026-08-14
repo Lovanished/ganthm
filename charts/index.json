@@ -4,6 +4,10 @@
     "chart": "charts/Ghondhy/Ghondhy.json"
   },
   {
+    "title": "메들리 part1",
+    "chart": "charts/200p01.json"
+  },
+  {
     "title": "Ghondhy 4 real",
     "chart": "charts/Ghondhy/real4.json"
   },
