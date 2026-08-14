@@ -29,10 +29,11 @@ body.editing #hitLine{background:#fbbf24;box-shadow:0 0 12px #fbbf24}
 
 /* 레인 전체 폭을 트랙 안쪽으로 좁혀서 중앙 정렬 (레인 수에 따라 폭 자동 조정) */
 .laneArea{position:absolute;top:0;bottom:0;left:50%;width:var(--laneAreaWidth,64%);transform:translateX(-50%)}
-.lane{position:absolute;top:0;bottom:0;width:calc(100% / var(--laneCount,4));border-right:1px solid #252d3d}
+.lane{position:absolute;top:0;bottom:0;width:calc(100% / var(--laneCount,4));border-right:1px solid #252d3d;touch-action:none;cursor:pointer}
 .lane:last-child{border:0}
-#hitLine{position:absolute;left:0;right:0;bottom:88px;height:3px;background:white;box-shadow:0 0 12px #fff}
-#notes{position:absolute;inset:0}
+.lane.pressed{background:rgba(125,211,252,.16)}
+#hitLine{position:absolute;left:0;right:0;bottom:88px;height:3px;background:white;box-shadow:0 0 12px #fff;pointer-events:none}
+#notes{position:absolute;inset:0;pointer-events:none}
 .note{position:absolute;width:calc(100% / var(--laneCount,4) - 8px);height:22px;margin-left:4px;border-radius:7px;background:#6ee7ff;box-shadow:0 0 12px #6ee7ff}
 
 /* 입력 반응형 사이드 장식: 평소엔 idle 이미지가 bpm에 맞춰 4프레임 위아래 꿈틀,
@@ -59,7 +60,8 @@ body.editing #hitLine{background:#fbbf24;box-shadow:0 0 12px #fbbf24}
 @media (max-width:820px){.sideDeco{display:none}}
 
 #keys{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:8px}
-kbd{min-width:44px;text-align:center;padding:10px;background:#151a25;border:1px solid #30384a;border-radius:7px}
+kbd{min-width:44px;text-align:center;padding:10px;background:#151a25;border:1px solid #30384a;border-radius:7px;touch-action:none;cursor:pointer;user-select:none}
+kbd.pressed{background:#233047;border-color:#7dd3fc}
 #judge{min-width:90px;text-align:center;font-weight:800}
 .subtle{color:#8d98ad;font-size:13px;text-align:center}
 #loadStatus{min-height:20px;text-align:center;color:#fbbf24}
