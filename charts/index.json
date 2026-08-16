@@ -8,6 +8,10 @@
     "chart": "charts/200p01.json"
   },
   {
+    "title": "Noble G",
+    "chart": "charts/NobleG.json"
+  },
+  {
     "title": "Ghondhy 4 real",
     "chart": "charts/Ghondhy/real4.json"
   },
