@@ -1,7 +1,9 @@
 {
-  "title": "NobleG",
+  "title": "Noble G",
+  "artist": "ChoiSanHa",
   "bpm": 148.0,
-  "audio": "../drive/MyDrive/!!ganthm/NobleG.mp3",
+  "audio": "songs/NobleG.mp3",
+  "lanes": 4,
   "notes": [
     {
       "time": 1.6216,
