@@ -16,7 +16,11 @@
     "chart": "charts/Ghondhy/real4.json"
   },
   {
-    "title": "날 파괴하다 전방 선",
+    "title": "날 파괴하다 전방 선 진심모드",
+    "chart": "charts/dbf_true.json"
+  },
+  {
+    "title": "날 파괴하다 전방 선 약간 매운맛(원조)",
     "chart": "charts/dbf.json"
   },
   {
