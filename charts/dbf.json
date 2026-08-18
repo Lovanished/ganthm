@@ -1,7 +1,10 @@
 {
-  "title": "!!!dbf",
+  "title": "날 파괴하다 전방 선",
+  "artist": "?",
   "bpm": 137.195,
-  "audio": "../drive/MyDrive/!!ganthm/!!!dbf.mp3",
+  "audio": "songs/Daybreakfrontline.mp3",
+  "lanes": 4,
+
   "notes": [
     {
       "time": 0.656,
