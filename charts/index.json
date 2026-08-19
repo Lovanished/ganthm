@@ -12,7 +12,8 @@
     "artist": "ChoiSan Ha",
     "difficulty": "4.3",
     "charts": [
-      { "name": "원조",   "chart": "charts/whgdb_true.json",   "level": 4 }
+      { "name": "원조",   "chart": "charts/whgdb_true.json",   "level": 4 },
+      { "name": "간디의 저주(6.0)",   "chart": "charts/whgdb_corrupted.json",   "level": 6 }
     ]
   },
   {
