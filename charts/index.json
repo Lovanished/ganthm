@@ -16,6 +16,10 @@
     "chart": "charts/Ghondhy/real4.json"
   },
   {
+    "title": "Ghondhy 4 진심모드",
+    "chart": "charts/Ghondhy/true.json"
+  },
+  {
     "title": "날 파괴하다 전방 선 진심모드",
     "chart": "charts/dbf_true.json"
   },
