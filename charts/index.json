@@ -13,6 +13,7 @@
     "difficulty": "4~6",
     "charts": [
       { "name": "원조(2.0 <-> 5.1)",   "chart": "charts/whgdb_true.json",   "level": 4 },
+      { "name": "Reborn(???)",   "chart": "charts/whgdb_reborn.json",   "level": 5 },
       { "name": "간디의 저주(6.0)",   "chart": "charts/whgdb_corrupted.json",   "level": 6 }
     ]
   },
