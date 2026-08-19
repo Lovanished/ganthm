@@ -33,17 +33,37 @@ let editMode=false,editInitialized=false,editHistory=[];
 const editHud=$('#editHud'),editStatusEl=$('#editStatus'),editTimeEl=$('#editTime'),editCountEl=$('#editCount'),snapSelect=$('#snapDivision');
 
 const modeListEl=$('#modeList');let selectedMode=null;
+
+// ===== 곡 선택 화면 슬라이드 네비게이션: 설정 ← 홈 → 곡선택 → 모드선택 =====
+const SLIDES=['settings','home','songs','modes'];
+const slideTrack=$('#slideTrack');
+let slideIndex=1;
+function navigateTo(name){
+  const idx=SLIDES.indexOf(name);
+  if(idx<0)return;
+  slideIndex=idx;
+  slideTrack.style.transform=`translateX(-${slideIndex*25}%)`;
+}
+slideTrack&&slideTrack.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-nav]');
+  if(btn)navigateTo(btn.dataset.nav);
+});
+const selectIdleImg=$('#selectIdleImg');
+if(selectIdleImg)selectIdleImg.src=IDLE_IMG;
+
+function starsFor(level,max=10){const n=Math.max(0,Math.min(max,Math.round(level||0)));return '★'.repeat(n)+'☆'.repeat(max-n)}
+
 async function init(){try{const r=await fetch('./charts/index.json',{cache:'no-store'});if(!r.ok)throw Error('charts/index.json '+r.status);songs=await r.json();renderSongs();}catch(e){statusEl.textContent='곡 목록을 불러오지 못했습니다: '+e.message;}}
-function renderSongs(){listEl.innerHTML='';songs.forEach((s,i)=>{const d=document.createElement('div');d.className='song';const badge=s.charts?`${s.charts.length}개 모드`:(s.difficulty||'NORMAL');d.innerHTML=`<div><h2>${esc(s.title||'Untitled')}</h2><p>${esc(s.artist||'')}</p></div><div class="meta">${esc(badge)}</div>`;d.onclick=()=>selectSong(i,d);listEl.appendChild(d)});if(songs.length)selectSong(0,listEl.firstChild)}
-function selectSong(i,el){document.querySelectorAll('.song').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selected=i;selectedMode=null;
+function renderSongs(){listEl.innerHTML='';songs.forEach((s,i)=>{const d=document.createElement('div');d.className='song';const badge=s.charts?`${s.charts.length}개 모드`:(s.difficulty||'NORMAL');const diffLabel=s.difficulty?`<p class="diffLabel">${esc(s.difficulty)}</p>`:'';d.innerHTML=`<div><h2>${esc(s.title||'Untitled')}</h2><p>${esc(s.artist||'')}</p>${diffLabel}</div><div class="meta">${esc(badge)}</div>`;d.onclick=()=>selectSong(i,d);listEl.appendChild(d)});if(songs.length)selectSong(0,listEl.firstChild,false)}
+function selectSong(i,el,autoNav=true){document.querySelectorAll('.song').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selected=i;selectedMode=null;
 const s=songs[i];
 if(Array.isArray(s.charts)&&s.charts.length){
   renderModes(s.charts);
-  modeListEl.classList.remove('hidden');
+  if(autoNav)navigateTo('modes');
   playBtn.disabled=true;
   statusEl.textContent='선택됨: '+(s.title||'Untitled')+' — 모드를 선택하세요';
 }else{
-  modeListEl.classList.add('hidden');modeListEl.innerHTML='';
+  modeListEl.innerHTML='';
   playBtn.disabled=false;
   statusEl.textContent='선택됨: '+(s.title||'Untitled');
 }}
@@ -52,7 +72,9 @@ function renderModes(modes){
   modes.forEach((m,i)=>{
     const b=document.createElement('div');
     b.className='mode';
-    b.textContent=m.name||m.difficulty||('모드 '+(i+1));
+    const label=document.createElement('div');label.textContent=m.name||m.difficulty||('모드 '+(i+1));b.appendChild(label);
+    const starsText=m.stars||(m.level!=null?starsFor(m.level):null);
+    if(starsText){const st=document.createElement('div');st.className='stars';st.textContent=starsText;b.appendChild(st)}
     b.onclick=()=>selectMode(i,b);
     modeListEl.appendChild(b);
   });
@@ -91,13 +113,13 @@ playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').class
   return;
 }
 running=true;requestAnimationFrame(frame)}catch(e){statusEl.textContent='실행 실패: '+e.message;}};
-$('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;resetDecoIdle(chart&&chart.bpm);exitEditModeSilently();$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')};
+$('#backBtn').onclick=()=>{running=false;audio.pause();audio.currentTime=0;resetDecoIdle(chart&&chart.bpm);exitEditModeSilently();$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden');navigateTo('songs')};
 function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0};$('#result').classList.add('hidden');$('#notes').innerHTML='';active=(chart.notes||[]).map((n,i)=>({...n,i,done:false,el:null}));editMode=false;editInitialized=false;editHistory=[];editHud.classList.add('hidden');document.body.classList.remove('editing');resetDecoIdle(chart.bpm);updateHud();$('#judge').textContent=''}
 function updateHud(){$('#score').textContent='SCORE '+score;$('#combo').textContent='COMBO '+combo}
 function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note'+(n.fromEdit?' editNote':'');e.style.left=(n.lane*100/laneCount)+'%';$('#notes').appendChild(e);n.el=e}}}
 function frame(){if(!running)return;const now=audio.currentTime;spawn(now);const h=$('#game').clientHeight,hit=h-88;for(const n of active){if(!n.el||n.done)continue;const d=n.time-now;n.el.style.top=(hit-d*speed-11)+'px';if(!editMode&&d<-.23)judge(n,'Miss')}if(editMode)updateEditHud();requestAnimationFrame(frame);}
 function judge(n,type){if(n.done)return;n.done=true;if(n.el)n.el.remove();counts[type]++;if(type==='Miss')combo=0;else{combo++;maxCombo=Math.max(maxCombo,combo);score+=type==='Perfect'?1000:type==='Great'?700:400}$('#judge').textContent=type;updateHud();if(active.every(x=>x.done))finish()}
-function finish(){running=false;resetDecoIdle(chart&&chart.bpm);$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden')}}
+function finish(){running=false;resetDecoIdle(chart&&chart.bpm);$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden');navigateTo('songs')}}
 
 // ===== 트랙 양옆 입력 반응형 장식 =====
 // - 평소(idle): idle.png가 bpm 한 박자 동안 4프레임으로 끊어서 위아래 스쿼시-스트레치
