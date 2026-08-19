@@ -47,6 +47,14 @@
     ]
   },
   {
+    "title": "베토벤 바이러스 오버로드",
+    "artist": "베토벤(아님)",
+    "difficulty": "???",
+    "charts": [
+      { "name": "원조(??)",   "chart": "charts/BTB_true.json",   "level": 6 }
+    ]
+  },
+  {
     "title": "Noble G",
     "artist": "ChoiSan Ha",
     "difficulty": "4.8",
