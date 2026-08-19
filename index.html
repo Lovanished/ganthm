@@ -2,17 +2,40 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rhythm Web</title><link rel="stylesheet" href="style.css"></head>
 <body>
 <div id="selectScreen" class="screen">
-  <div class="panel">
-    <h1>RHYTHM WEB</h1>
-    <p class="sub">SELECT SONG</p>
-    <div id="songList"></div>
-    <div id="modeList" class="hidden"></div>
-    <div class="speedControl">
-      <label for="speedRange">노트 속도 <span id="speedValue">430</span></label>
-      <input type="range" id="speedRange" min="200" max="900" step="10" value="430">
+  <div class="selectLayout">
+    <div class="selectSlider">
+      <div class="slideTrack" id="slideTrack">
+        <div class="slidePage" id="pageSettings">
+          <div class="pageHeader"><button class="backSlide" data-nav="home">◀ 뒤로</button><p class="sub">SETTINGS</p></div>
+          <div class="speedControl">
+            <label for="speedRange">노트 속도 <span id="speedValue">430</span></label>
+            <input type="range" id="speedRange" min="200" max="900" step="10" value="430">
+          </div>
+          <div class="keyBindSection">
+            <p class="sub small">키 커스터마이징</p>
+            <p class="subtle">준비 중인 기능입니다</p>
+          </div>
+        </div>
+        <div class="slidePage" id="pageHome">
+          <h1>RHYTHM WEB</h1>
+          <button class="bigBtn" data-nav="songs">곡 플레이</button>
+          <button class="bigBtn secondary" data-nav="settings">설정</button>
+        </div>
+        <div class="slidePage" id="pageSongs">
+          <div class="pageHeader"><button class="backSlide" data-nav="home">◀ 뒤로</button><p class="sub">SELECT SONG</p></div>
+          <div id="songList"></div>
+        </div>
+        <div class="slidePage" id="pageModes">
+          <div class="pageHeader"><button class="backSlide" data-nav="songs">◀ 뒤로</button><p class="sub">SELECT MODE</p></div>
+          <div id="modeList"></div>
+        </div>
+      </div>
     </div>
-    <button id="playSelected" disabled>PLAY</button>
-    <p id="loadStatus"></p>
+    <div class="selectSide">
+      <div class="sideIdle"><img id="selectIdleImg" class="idleWiggle" alt=""></div>
+      <button id="playSelected" disabled>PLAY</button>
+      <p id="loadStatus"></p>
+    </div>
   </div>
 </div>
 <div id="gameScreen" class="screen hidden">
