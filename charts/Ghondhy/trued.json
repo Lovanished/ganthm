@@ -1,7 +1,9 @@
 {
-  "title": "Ghondhy",
-  "bpm": 85.0,
-  "audio": "../drive/MyDrive/!!ganthm/Ghondhy.mp3",
+  "title": "Ghondhy TRUE POWER",
+  "artist": "ChoiSanHa",
+  "bpm": 172.266,
+  "audio": "songs/Ghondhy.mp3",
+  "lanes": 4,
   "notes": [
     {
       "time": 2.4073,
