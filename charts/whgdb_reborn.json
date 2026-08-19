@@ -1,7 +1,9 @@
 {
-  "title": "whgdb",
-  "bpm": 133.0,
-  "audio": "../drive/MyDrive/!!ganthm/whgdb.mp3",
+  "title": "원핵 간디 버스트 reborn",
+  "artist": "ChoiSanHa",
+  "bpm": 132.512,
+  "audio": "songs/whgdb.mp3",
+  "lanes": 4,
   "notes": [
     {
       "time": 4.0601,
