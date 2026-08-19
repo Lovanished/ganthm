@@ -32,10 +32,43 @@ speedRange&&speedRange.addEventListener('input',()=>{speed=parseInt(speedRange.v
 let editMode=false,editInitialized=false,editHistory=[];
 const editHud=$('#editHud'),editStatusEl=$('#editStatus'),editTimeEl=$('#editTime'),editCountEl=$('#editCount'),snapSelect=$('#snapDivision');
 
+const modeListEl=$('#modeList');let selectedMode=null;
 async function init(){try{const r=await fetch('./charts/index.json',{cache:'no-store'});if(!r.ok)throw Error('charts/index.json '+r.status);songs=await r.json();renderSongs();}catch(e){statusEl.textContent='곡 목록을 불러오지 못했습니다: '+e.message;}}
-function renderSongs(){listEl.innerHTML='';songs.forEach((s,i)=>{const d=document.createElement('div');d.className='song';d.innerHTML=`<div><h2>${esc(s.title||'Untitled')}</h2><p>${esc(s.artist||'')}</p></div><div class="meta">${esc(s.difficulty||'NORMAL')}</div>`;d.onclick=()=>selectSong(i,d);listEl.appendChild(d)});if(songs.length)selectSong(0,listEl.firstChild)}
-function selectSong(i,el){document.querySelectorAll('.song').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selected=i;playBtn.disabled=false;statusEl.textContent='선택됨: '+(songs[i].title||'Untitled')}
-async function loadChart(){const s=songs[selected];const r=await fetch(s.chart,{cache:'no-store'});if(!r.ok)throw Error('채보 파일 '+r.status);chart=await r.json();const base = new URL(".", window.location.href);
+function renderSongs(){listEl.innerHTML='';songs.forEach((s,i)=>{const d=document.createElement('div');d.className='song';const badge=s.charts?`${s.charts.length}개 모드`:(s.difficulty||'NORMAL');d.innerHTML=`<div><h2>${esc(s.title||'Untitled')}</h2><p>${esc(s.artist||'')}</p></div><div class="meta">${esc(badge)}</div>`;d.onclick=()=>selectSong(i,d);listEl.appendChild(d)});if(songs.length)selectSong(0,listEl.firstChild)}
+function selectSong(i,el){document.querySelectorAll('.song').forEach(x=>x.classList.remove('selected'));el.classList.add('selected');selected=i;selectedMode=null;
+const s=songs[i];
+if(Array.isArray(s.charts)&&s.charts.length){
+  renderModes(s.charts);
+  modeListEl.classList.remove('hidden');
+  playBtn.disabled=true;
+  statusEl.textContent='선택됨: '+(s.title||'Untitled')+' — 모드를 선택하세요';
+}else{
+  modeListEl.classList.add('hidden');modeListEl.innerHTML='';
+  playBtn.disabled=false;
+  statusEl.textContent='선택됨: '+(s.title||'Untitled');
+}}
+function renderModes(modes){
+  modeListEl.innerHTML='<div class="modeHint">모드 선택</div>';
+  modes.forEach((m,i)=>{
+    const b=document.createElement('div');
+    b.className='mode';
+    b.textContent=m.name||m.difficulty||('모드 '+(i+1));
+    b.onclick=()=>selectMode(i,b);
+    modeListEl.appendChild(b);
+  });
+}
+function selectMode(i,el){
+  modeListEl.querySelectorAll('.mode').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode=i;
+  playBtn.disabled=false;
+  const s=songs[selected],m=s.charts[i];
+  statusEl.textContent='선택됨: '+(s.title||'Untitled')+' — '+(m.name||m.difficulty||('모드 '+(i+1)));
+}
+async function loadChart(){
+  const s=songs[selected];
+  const chartPath=Array.isArray(s.charts)?s.charts[selectedMode].chart:s.chart;
+  const r=await fetch(chartPath,{cache:'no-store'});if(!r.ok)throw Error('채보 파일 '+r.status);chart=await r.json();const base = new URL(".", window.location.href);
 audio.src = new URL(chart.audio, base).href;
 audio.preload = "auto";
 audio.load();
@@ -47,7 +80,8 @@ audio.onerror = () => {
 };
 if(chart.speed&&speedRange){speed=chart.speed;speedRange.value=chart.speed;speedValueEl.textContent=chart.speed}
 setupLanes(chart.lanes||4);
-$('#songTitle').textContent=chart.title||s.title||''}
+const modeLabel=Array.isArray(s.charts)?(' — '+(s.charts[selectedMode].name||s.charts[selectedMode].difficulty||'')):'';
+$('#songTitle').textContent=(chart.title||s.title||'')+modeLabel}
 playBtn.onclick=async()=>{try{await loadChart();reset();$('#selectScreen').classList.add('hidden');$('#gameScreen').classList.remove('hidden');try {
   await audio.play();
 } catch (err) {
