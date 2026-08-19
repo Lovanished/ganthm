@@ -14,7 +14,8 @@
     "charts": [
       { "name": "원조",   "chart": "charts/Ghondhy/real4.json",   "level": 4 },
       { "name": "동타", "chart": "charts/Ghondhy/normal4.json",   "level": 4 },
-      { "name": "TRUE POWER이었어야 하는 것..?",   "chart": "charts/Ghondhy/true.json",   "level": 3 }
+      { "name": "동타버전 매운맛", "chart": "charts/Ghondhy/trued.json",   "level": 4 },
+      { "name": "동타X 순한맛",   "chart": "charts/Ghondhy/true.json",   "level": 3 }
     ]
   },
   {
