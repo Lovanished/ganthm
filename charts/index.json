@@ -2,41 +2,46 @@
   {
     "title": "GDZone",
     "artist": "ChoiSan Ha",
+    "difficulty": "4.3",
     "charts": [
-      { "name": "원조",   "chart": "charts/gdzone.json" }
+      { "name": "원조",   "chart": "charts/gdzone.json",   "level": 4 }
     ]
   },
   {
     "title": "Ghondhy",
     "artist": "ChoiSan Ha",
+    "difficulty": "3~4",
     "charts": [
-      { "name": "원조",   "chart": "charts/Ghondhy/real4.json" },
-      { "name": "동타", "chart": "charts/Ghondhy/normal4.json" },
-      { "name": "TRUE POWER",   "chart": "charts/Ghondhy/true.json" }
+      { "name": "원조",   "chart": "charts/Ghondhy/real4.json",   "level": 4 },
+      { "name": "동타", "chart": "charts/Ghondhy/normal4.json",   "level": 4 },
+      { "name": "TRUE POWER이었어야 하는 것..?",   "chart": "charts/Ghondhy/true.json",   "level": 3 }
     ]
   },
   {
     "title": "날 파괴하다 전방 선",
     "artist": "???",
+    "difficulty": "2~5",
     "charts": [
-      { "name": "원조",   "chart": "charts/dbf.json" },
-      { "name": "진심모드", "chart": "charts/dbf_true.json" },
-      { "name": "약간 순한맛", "chart": "charts/dbf_normal.json" },
-      { "name": "👶",   "chart": "charts/dbf_baby.json" }
+      { "name": "원조",   "chart": "charts/dbf.json",   "level": 5 },
+      { "name": "진심모드", "chart": "charts/dbf_true.json",   "level": 5 },
+      { "name": "약간 순한맛", "chart": "charts/dbf_normal.json",   "level": 3 },
+      { "name": "👶",   "chart": "charts/dbf_baby.json",   "level": 2 }
     ]
   },
   {
     "title": "200 anime 메들리",
     "artist": "animenz",
+    "difficulty": "3~4",
     "charts": [
-      { "name": "Part 1",   "chart": "charts/200p01.json" }
+      { "name": "Part 1",   "chart": "charts/200p01.json",   "level": 4 }
     ]
   },
   {
     "title": "Noble G",
     "artist": "ChoiSan Ha",
+    "difficulty": "4.1",
     "charts": [
-      { "name": "원조",   "chart": "charts/NobleG.json" }
+      { "name": "원조",   "chart": "charts/NobleG.json",   "level": 4 }
     ]
   }
 ]
