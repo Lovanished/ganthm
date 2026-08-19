@@ -12,9 +12,9 @@
     "artist": "ChoiSan Ha",
     "difficulty": "4~6",
     "charts": [
-      { "name": "원조(2.0 <-> 5.1)",   "chart": "charts/whgdb_true.json",   "level": 4 },
-      { "name": "Reborn(4?)",   "chart": "charts/whgdb_reborn.json",   "level": 5 },
-      { "name": "간디의 저주(6.0)",   "chart": "charts/whgdb_corrupted.json",   "level": 6 }
+      { "name": "원조(2.0 <-> 5.1)",   "chart": "charts/whgdb/true.json",   "level": 4 },
+      { "name": "Reborn(4?)",   "chart": "charts/whgdb/reborn.json",   "level": 5 },
+      { "name": "간디의 저주(6.0)",   "chart": "charts/whgdb/corrupted.json",   "level": 6 }
     ]
   },
   {
@@ -33,10 +33,10 @@
     "artist": "???",
     "difficulty": "2~5",
     "charts": [
-      { "name": "원조(5.3)",   "chart": "charts/dbf.json",   "level": 5 },
-      { "name": "진심모드(5.1)", "chart": "charts/dbf_true.json",   "level": 5 },
-      { "name": "약간 순한맛(3.4)", "chart": "charts/dbf_normal.json",   "level": 3 },
-      { "name": "👶(2.0)",   "chart": "charts/dbf_baby.json",   "level": 2 }
+      { "name": "원조(5.3)",   "chart": "charts/dbf/dbf.json",   "level": 5 },
+      { "name": "진심모드(5.1)", "chart": "charts/dbf/true.json",   "level": 5 },
+      { "name": "약간 순한맛(3.4)", "chart": "charts/dbf/normal.json",   "level": 3 },
+      { "name": "👶(2.0)",   "chart": "charts/dbf/baby.json",   "level": 2 }
     ]
   },
   {
@@ -44,7 +44,7 @@
     "artist": "animenz",
     "difficulty": "3~4",
     "charts": [
-      { "name": "Part 1(4.1)",   "chart": "charts/200p01.json",   "level": 4 }
+      { "name": "Part 1(4.1)",   "chart": "charts/200p/200p01.json",   "level": 4 }
     ]
   },
   {
@@ -52,8 +52,8 @@
     "artist": "제 3의 귀를 각성한 베토벤",
     "difficulty": "4.5~6.0",
     "charts": [
-      { "name": "원조(6.0)",   "chart": "charts/BTB_true.json",   "level": 6 },
-      { "name": "Reborn(???)",   "chart": "charts/BTB_reborn.json",   "level": 4 }
+      { "name": "원조(6.0)",   "chart": "charts/BTB/true.json",   "level": 6 },
+      { "name": "Reborn(???)",   "chart": "charts/BTB/reborn.json",   "level": 4 }
     ]
   },
   {
