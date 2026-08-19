@@ -48,10 +48,10 @@
   },
   {
     "title": "베토벤 바이러스 오버로드",
-    "artist": "베토벤(아님)",
-    "difficulty": "???",
+    "artist": "제 3의 귀를 각성한 베토벤",
+    "difficulty": "4.5~6.0",
     "charts": [
-      { "name": "원조(??)",   "chart": "charts/BTB_true.json",   "level": 6 }
+      { "name": "원조(6.0)",   "chart": "charts/BTB_true.json",   "level": 6 }
     ]
   },
   {
