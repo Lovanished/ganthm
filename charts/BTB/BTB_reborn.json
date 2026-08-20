@@ -1,7 +1,9 @@
 {
-  "title": "BTB",
+  "title": "베토벤바이러스 오버로드 Reborn",
+  "artist": "ChoiSanHa",
   "bpm": 156.605,
-  "audio": "../drive/MyDrive/!!ganthm/BTB.mp3",
+  "audio": "songs/BTB.mp3",
+  "lanes": 4,
   "notes": [
     {
       "time": 0.1916,
