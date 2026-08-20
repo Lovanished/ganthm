@@ -14,6 +14,40 @@ function setupLanes(n){
 }
 setupLanes(4);
 
+// ===== 노트 입력 이펙트 / 사운드 설정 =====
+let settings={effects:true,sound:true};
+const fxToggle=$('#fxToggle'),soundToggle=$('#soundToggle');
+fxToggle&&fxToggle.addEventListener('change',()=>{settings.effects=fxToggle.checked;if(!settings.effects)document.querySelectorAll('.lane.lit,kbd.lit').forEach(el=>el.classList.remove('lit'))});
+soundToggle&&soundToggle.addEventListener('change',()=>{settings.sound=soundToggle.checked});
+
+const HIT_SOUND_SRC='assets/note1.mp3';
+const hitSoundPool=Array.from({length:6},()=>new Audio(HIT_SOUND_SRC));
+let hitSoundIdx=0;
+function playHitSound(){
+  if(!settings.sound)return;
+  const a=hitSoundPool[hitSoundIdx];
+  hitSoundIdx=(hitSoundIdx+1)%hitSoundPool.length;
+  a.currentTime=0;
+  a.play().catch(()=>{});
+}
+
+// 레인에 불 켜기/끄기 (키를 누르고 있는 동안, 또는 터치 중)
+function setLaneLit(lane,on){
+  if(on&&!settings.effects)return;
+  document.querySelectorAll(`.lane[data-lane="${lane}"], kbd[data-lane="${lane}"]`).forEach(el=>el.classList.toggle('lit',on));
+}
+// Perfect 판정 시 히트라인 위치에 터지는 이펙트
+function spawnPerfectEffect(lane){
+  if(!settings.effects)return;
+  const area=document.querySelector('.laneArea');
+  if(!area)return;
+  const fx=document.createElement('div');
+  fx.className='perfectFx';
+  fx.style.left=((lane+0.5)*100/laneCount)+'%';
+  area.appendChild(fx);
+  fx.addEventListener('animationend',()=>fx.remove());
+}
+
 // 트랙 양옆 장식: 평소엔 idle 이미지, D/F/J/K 입력에 맞춰 방향 이미지로 반응. 실제 파일명/경로에 맞게 수정하세요.
 const LANE_IMG={d:'assets/left.png',f:'assets/down.png',j:'assets/up.png',k:'assets/right.png'};
 const LANE_DIR={d:'left',f:'down',j:'up',k:'right'};
@@ -118,7 +152,7 @@ function reset(){score=combo=maxCombo=0;counts={Perfect:0,Great:0,Good:0,Miss:0}
 function updateHud(){$('#score').textContent='SCORE '+score;$('#combo').textContent='COMBO '+combo}
 function spawn(now){for(const n of active){if(n.el||n.done)continue;if(n.time-now<3){const e=document.createElement('div');e.className='note'+(n.fromEdit?' editNote':'');e.style.left=(n.lane*100/laneCount)+'%';$('#notes').appendChild(e);n.el=e}}}
 function frame(){if(!running)return;const now=audio.currentTime;spawn(now);const h=$('#game').clientHeight,hit=h-88;for(const n of active){if(!n.el||n.done)continue;const d=n.time-now;n.el.style.top=(hit-d*speed-11)+'px';if(!editMode&&d<-.23)judge(n,'Miss')}if(editMode)updateEditHud();requestAnimationFrame(frame);}
-function judge(n,type){if(n.done)return;n.done=true;if(n.el)n.el.remove();counts[type]++;if(type==='Miss')combo=0;else{combo++;maxCombo=Math.max(maxCombo,combo);score+=type==='Perfect'?1000:type==='Great'?700:400}$('#judge').textContent=type;updateHud();if(active.every(x=>x.done))finish()}
+function judge(n,type){if(n.done)return;n.done=true;if(n.el)n.el.remove();counts[type]++;if(type==='Miss')combo=0;else{combo++;maxCombo=Math.max(maxCombo,combo);score+=type==='Perfect'?1000:type==='Great'?700:400;playHitSound();if(type==='Perfect')spawnPerfectEffect(n.lane)}$('#judge').textContent=type;updateHud();if(active.every(x=>x.done))finish()}
 function finish(){running=false;resetDecoIdle(chart&&chart.bpm);$('#result').innerHTML=`<div class="resultBox"><div><b>RESULT</b><br><br>SCORE ${score}<br>MAX COMBO ${maxCombo}<br>Perfect ${counts.Perfect} / Great ${counts.Great} / Good ${counts.Good} / Miss ${counts.Miss}<br><br><button id="closeResult">SONG SELECT</button></div></div>`;$('#result').classList.remove('hidden');$('#closeResult').onclick=()=>{$('#result').classList.add('hidden');$('#gameScreen').classList.add('hidden');$('#selectScreen').classList.remove('hidden');navigateTo('songs')}}
 
 // ===== 트랙 양옆 입력 반응형 장식 =====
@@ -238,18 +272,33 @@ function keydown(e){
   if(document.activeElement&&['SELECT','INPUT'].includes(document.activeElement.tagName))return;
   if(e.code==='Space'&&chart&&!$('#gameScreen').classList.contains('hidden')){e.preventDefault();toggleEditMode();return}
   const key=e.key.toLowerCase();
+  const gameVisible=chart&&!$('#gameScreen').classList.contains('hidden');
+  if(gameVisible&&LANE_KEYS[key]!==undefined)setLaneLit(LANE_KEYS[key],true);
   if(editMode){handleEditKey(e);return}
   if(!running)return;
   const lane=LANE_KEYS[key];if(lane===undefined)return;
   handleLaneInput(lane);
 }
+function keyup(e){
+  const key=e.key.toLowerCase();
+  const lane=LANE_KEYS[key];
+  if(lane!==undefined)setLaneLit(lane,false);
+}
 // 레인 터치/클릭 입력: 손가락이나 마우스로 직접 레인을 눌러도 키보드와 동일하게 동작 (멀티터치 지원)
+const laneByPointer=new Map();
 function onLanePointerDown(e){
   e.preventDefault();
   const lane=parseInt(e.currentTarget.dataset.lane,10);
-  e.currentTarget.classList.add('pressed');
-  clearTimeout(e.currentTarget._pressTimer);
-  e.currentTarget._pressTimer=setTimeout(()=>e.currentTarget.classList.remove('pressed'),120);
+  laneByPointer.set(e.pointerId,lane);
+  setLaneLit(lane,true);
   handleLaneInput(lane);
 }
-document.addEventListener('keydown',keydown);function esc(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}init();
+function releasePointerLane(e){
+  const lane=laneByPointer.get(e.pointerId);
+  if(lane!==undefined){setLaneLit(lane,false);laneByPointer.delete(e.pointerId)}
+}
+document.addEventListener('pointerup',releasePointerLane);
+document.addEventListener('pointercancel',releasePointerLane);
+document.addEventListener('keydown',keydown);
+document.addEventListener('keyup',keyup);
+function esc(x){return String(x).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}init();
