@@ -9,7 +9,7 @@ function setupLanes(n){
   LANE_KEYS={};LANES.forEach((k,i)=>LANE_KEYS[k]=i);
   document.documentElement.style.setProperty('--laneCount',laneCount);
   document.documentElement.style.setProperty('--laneAreaWidth',(laneCount<=4?64:laneCount<=6?80:94)+'%');
-  const lanesEl=$('#lanes');lanesEl.innerHTML='';for(let i=0;i<laneCount;i++){const d=document.createElement('div');d.className='lane';d.dataset.lane=i;d.addEventListener('pointerdown',onLanePointerDown);lanesEl.appendChild(d)}
+  const lanesEl=$('#lanes');lanesEl.innerHTML='';for(let i=0;i<laneCount;i++){const d=document.createElement('div');d.className='lane';d.dataset.lane=i;d.style.left=(i*100/laneCount)+'%';d.addEventListener('pointerdown',onLanePointerDown);lanesEl.appendChild(d)}
   const keysEl=$('#keys');keysEl.innerHTML='';LANES.forEach((k,i)=>{const kb=document.createElement('kbd');kb.textContent=k.toUpperCase();kb.dataset.lane=i;kb.addEventListener('pointerdown',onLanePointerDown);keysEl.appendChild(kb)});
 }
 setupLanes(4);
