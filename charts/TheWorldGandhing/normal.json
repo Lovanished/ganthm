@@ -1,7 +1,9 @@
 {
-  "title": "TheWorldGandhing",
-  "bpm": 190.0,
-  "audio": "../drive/MyDrive/!!ganthm/TheWorldGandhing.mp3",
+  "title": "The World Revolving",
+  "artist": "ChoiSanHa",
+  "bpm": 190,
+  "audio": "songs/TheWorldGandhing.mp3",
+  "lanes": 4,
   "notes": [
     {
       "time": 1.2632,
