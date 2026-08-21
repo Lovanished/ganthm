@@ -8,6 +8,14 @@
     ]
   },
   {
+    "title": "The World Gandhing",
+    "artist": "ChoiSan Ha",
+    "difficulty": "4.3",
+    "charts": [
+      { "name": "원조(???)",   "chart": "charts/TheWorldGandhing/normal.json",   "level": 4 }
+    ]
+  },
+  {
     "title": "One Nuke GD Burst",
     "artist": "ChoiSan Ha",
     "difficulty": "4~6",
